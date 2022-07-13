@@ -1,0 +1,18 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: emailqueeucrieiprausarspring@gmail.com
+    password: ojrgbvwfaemtnvln
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  data:
+    mongodb:
+      uri: ${MONGO_ACCESS}
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
