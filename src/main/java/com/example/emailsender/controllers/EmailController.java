@@ -32,7 +32,7 @@ public class EmailController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @PostMapping(value = "/send", produces = "application/JSON;charset=UTF-8")
     public ResponseEntity<Void> send(@RequestBody final EmailSubjectDTO receiver){
-        var convertedReceiver = EmailSubject.builder()
+        final var convertedReceiver = EmailSubject.builder()
                 .name(receiver.getName())
                 .email(receiver.getEmail())
                 .token(tokenService.insertToken(receiver.getEmail()))
@@ -50,7 +50,7 @@ public class EmailController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @PostMapping(value = "/validate")
     public ResponseEntity<Void> validate(@RequestBody final TokenDTO token){
-        var convertedToken = Token.builder()
+        final var convertedToken = Token.builder()
                 .email(token.getEmail())
                 .token(token.getToken())
                 .build();
