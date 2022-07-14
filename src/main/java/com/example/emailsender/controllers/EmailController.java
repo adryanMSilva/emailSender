@@ -1,7 +1,9 @@
 package com.example.emailsender.controllers;
 
+import com.example.emailsender.entities.DTO.EmailSubjectDTO;
+import com.example.emailsender.entities.DTO.TokenDTO;
 import com.example.emailsender.entities.EmailSubject;
-import com.example.emailsender.entities.EmailReceiver;
+import com.example.emailsender.entities.Token;
 import com.example.emailsender.services.EmailService;
 import com.example.emailsender.services.TokenService;
 import io.swagger.annotations.ApiResponse;
@@ -23,25 +25,36 @@ public class EmailController {
 
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Email enviado com sucesso"),
+            @ApiResponse(code = 409, message = "Já existe um token válido associado ao email"),
             @ApiResponse(code = 422, message = "Erro ao enviar o email"),
             @ApiResponse(code = 500, message = "Erro interno")
     })
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/send")
-    public ResponseEntity<Void> send(@RequestBody final EmailSubject receiver){
-        receiver.setToken(tokenService.insertToken(receiver.getEmail()));
-        emailService.sendMail(receiver);
+    @PostMapping(value = "/send", produces = "application/JSON;charset=UTF-8")
+    public ResponseEntity<Void> send(@RequestBody final EmailSubjectDTO receiver){
+        var convertedReceiver = EmailSubject.builder()
+                .name(receiver.getName())
+                .email(receiver.getEmail())
+                .token(tokenService.insertToken(receiver.getEmail()))
+                .build();
+        emailService.sendMail(convertedReceiver);
         return ResponseEntity.noContent().build();
     }
 
 
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Serviço executado"),
+            @ApiResponse(code = 204, message = "Token validado com sucesso"),
+            @ApiResponse(code = 404, message = "Token não encontrado"),
             @ApiResponse(code = 500, message = "Erro interno")
     })
-    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @PostMapping(value = "/validate")
-    public ResponseEntity<Boolean> validate(@RequestBody final EmailReceiver emailReceiver){
-        return ResponseEntity.ok().body(tokenService.validateToken(emailReceiver));
+    public ResponseEntity<Void> validate(@RequestBody final TokenDTO token){
+        var convertedToken = Token.builder()
+                .email(token.getEmail())
+                .token(token.getToken())
+                .build();
+        tokenService.validateToken(convertedToken);
+        return ResponseEntity.noContent().build();
     }
 }
