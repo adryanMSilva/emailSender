@@ -4,6 +4,10 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
@@ -18,7 +22,15 @@ import java.time.ZonedDateTime;
 public class Token {
     @Id
     private String id;
+
+    @NotNull(message = "O campo token é obrigatório")
+    @Size(max = 6, min = 6, message = "O token precisa ter 6 caracteres")
+    @Pattern(regexp = "^[0-9]*$", message = "O token precisa conter apenas numeros")
     private String token;
+
+    @NotNull(message = "O campo email é obrigatório")
+    @Email(message = "Email inválido")
     private String email;
+
     private Instant date;
 }

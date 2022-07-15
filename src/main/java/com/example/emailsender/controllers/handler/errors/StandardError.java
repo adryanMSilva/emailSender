@@ -1,4 +1,4 @@
-package com.example.emailsender.controllers.handler;
+package com.example.emailsender.controllers.handler.errors;
 
 import lombok.*;
 

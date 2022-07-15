@@ -1,24 +1,28 @@
 package com.example.emailsender.services;
 
-import com.example.emailsender.controllers.handler.ExpiredTokenException;
-import com.example.emailsender.controllers.handler.ExistingTokenException;
-import com.example.emailsender.controllers.handler.TokenNotFoundException;
+import com.example.emailsender.controllers.handler.exceptions.ExpiredTokenException;
+import com.example.emailsender.controllers.handler.exceptions.ExistingTokenException;
+import com.example.emailsender.controllers.handler.exceptions.TokenNotFoundException;
 import com.example.emailsender.entities.Token;
 import com.example.emailsender.repositories.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.*;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 
 @Service
 public class TokenService {
 
     @Autowired
     private TokenRepository repository;
+
+    private Validator validator;
 
     public String insertToken(final String userEmail){
         final var existentToken = repository.findByEmail(userEmail);
@@ -28,7 +32,7 @@ public class TokenService {
             } else {
                 LocalTime d = existentToken.getDate().plusSeconds(3600)
                         .atZone(ZoneId.of("America/Sao_Paulo")).toLocalTime();
-                throw new ExistingTokenException("Seu token expira as: " + d.toString(), existentToken.getEmail());
+                throw new ExistingTokenException("Seu token expira às: " + d.toString(), existentToken.getEmail());
             }
         }
         final var token = Token.builder()
@@ -43,6 +47,12 @@ public class TokenService {
     }
 
     public void validateToken(final Token tokenSrc) {
+        createValidator();
+        Set<ConstraintViolation<Token>> violations = validator.validate(tokenSrc);
+
+        if(!violations.isEmpty()){
+            throw new ConstraintViolationException(violations);
+        }
 
         final var tokenFnd = repository.findByEmailAndToken(tokenSrc.getEmail(), tokenSrc.getToken());
 
@@ -73,5 +83,10 @@ public class TokenService {
         } while (!valid);
 
         return generatedToken;
+    }
+
+    private void createValidator(){
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 }

@@ -1,4 +1,4 @@
-package com.example.emailsender.controllers.handler;
+package com.example.emailsender.controllers.handler.exceptions;
 
 public class TokenNotFoundException extends RuntimeException{
 

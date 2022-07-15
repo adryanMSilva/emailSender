@@ -1,16 +1,15 @@
 package com.example.emailsender.services;
 
-import com.example.emailsender.controllers.handler.EmailException;
+import com.example.emailsender.controllers.handler.exceptions.EmailException;
 import com.example.emailsender.entities.EmailSubject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import javax.validation.*;
+import java.util.Set;
 
 @Service
 public class EmailService {
@@ -18,7 +17,20 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private TokenService tokenService;
+
+    private Validator validator;
+
     public void sendMail(final EmailSubject to) {
+        createValidator();
+        Set<ConstraintViolation<EmailSubject>> violations = validator.validate(to);
+
+        if(!violations.isEmpty()){
+            throw new ConstraintViolationException(violations);
+        }
+
+        to.setToken(tokenService.insertToken(to.getEmail()));
         final var mimeMessage = mailSender.createMimeMessage();
         final var helper = new MimeMessageHelper(mimeMessage, "utf-8");
         final var html = "<div style=\"text-align: center;\">\n" +
@@ -37,5 +49,11 @@ public class EmailService {
         } catch (MessagingException e) {
             throw new EmailException("Verifique o email e tente novamente em alguns minutos");
         }
+    }
+
+
+    private void createValidator(){
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 }
