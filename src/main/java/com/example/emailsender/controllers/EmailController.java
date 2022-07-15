@@ -63,6 +63,7 @@ public class EmailController {
                 .email(token.getEmail())
                 .token(token.getToken())
                 .build();
+        logger.info("Preparing to validate the token {}", token.getToken());
         tokenService.validateToken(convertedToken);
         return ResponseEntity.noContent().build();
     }
