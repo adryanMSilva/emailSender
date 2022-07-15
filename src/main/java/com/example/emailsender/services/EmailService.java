@@ -1,7 +1,10 @@
 package com.example.emailsender.services;
 
+import com.example.emailsender.EmailSenderApplication;
 import com.example.emailsender.controllers.handler.exceptions.EmailException;
 import com.example.emailsender.entities.EmailSubject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,11 +25,14 @@ public class EmailService {
 
     private Validator validator;
 
+    private static Logger logger = LoggerFactory.getLogger(EmailSenderApplication.class);
+
     public void sendMail(final EmailSubject to) {
         createValidator();
         Set<ConstraintViolation<EmailSubject>> violations = validator.validate(to);
 
         if(!violations.isEmpty()){
+            logger.error("Constraint violations founded");
             throw new ConstraintViolationException(violations);
         }
 
@@ -46,7 +52,9 @@ public class EmailService {
             helper.setSubject("Finalizar cadastro");
             helper.setFrom("emailqueeucrieiprausarspring@gmail.com");
             mailSender.send(mimeMessage);
+            logger.info("Email sent to {}",to.getEmail());
         } catch (MessagingException e) {
+            logger.error("The application couldn't send the email");
             throw new EmailException("Verifique o email e tente novamente em alguns minutos");
         }
     }

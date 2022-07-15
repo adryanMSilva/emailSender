@@ -1,10 +1,13 @@
 package com.example.emailsender.services;
 
+import com.example.emailsender.EmailSenderApplication;
 import com.example.emailsender.controllers.handler.exceptions.ExpiredTokenException;
 import com.example.emailsender.controllers.handler.exceptions.ExistingTokenException;
 import com.example.emailsender.controllers.handler.exceptions.TokenNotFoundException;
 import com.example.emailsender.entities.Token;
 import com.example.emailsender.repositories.TokenRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +27,16 @@ public class TokenService {
 
     private Validator validator;
 
+    private static Logger logger = LoggerFactory.getLogger(EmailSenderApplication.class);
+
     public String insertToken(final String userEmail){
         final var existentToken = repository.findByEmail(userEmail);
         if(Objects.nonNull(existentToken)){
             if(Instant.now().getEpochSecond() - existentToken.getDate().getEpochSecond() > 3600) {
+                logger.info("An expired token was found, deleting it...");
                 repository.delete(existentToken);
             } else {
+                logger.error("A valid token was found");
                 LocalTime d = existentToken.getDate().plusSeconds(3600)
                         .atZone(ZoneId.of("America/Sao_Paulo")).toLocalTime();
                 throw new ExistingTokenException("Seu token expira às: " + d.toString(), existentToken.getEmail());
@@ -51,6 +58,7 @@ public class TokenService {
         Set<ConstraintViolation<Token>> violations = validator.validate(tokenSrc);
 
         if(!violations.isEmpty()){
+            logger.error("Constraint violations founded");
             throw new ConstraintViolationException(violations);
         }
 
@@ -58,11 +66,14 @@ public class TokenService {
 
         if(Objects.nonNull(tokenFnd)){
             if(Instant.now().getEpochSecond() - tokenFnd.getDate().getEpochSecond() < 3600) {
+                logger.info("Token found, deleting it...");
                 repository.delete(tokenFnd);
             } else {
+                logger.error("The token {} is expired", tokenFnd.getToken());
                 throw new ExpiredTokenException("Por favor, gere um novo token");
             }
         } else {
+            logger.error("Token {} not found",tokenSrc.getToken());
             throw new TokenNotFoundException("Não foi encontrado o token " + tokenSrc.getToken()
                     + " associado com o email " + tokenSrc.getEmail());
         }

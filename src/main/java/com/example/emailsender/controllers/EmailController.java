@@ -1,5 +1,6 @@
 package com.example.emailsender.controllers;
 
+import com.example.emailsender.EmailSenderApplication;
 import com.example.emailsender.entities.DTO.EmailSubjectDTO;
 import com.example.emailsender.entities.DTO.TokenDTO;
 import com.example.emailsender.entities.EmailSubject;
@@ -8,6 +9,8 @@ import com.example.emailsender.services.EmailService;
 import com.example.emailsender.services.TokenService;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,8 @@ public class EmailController {
     @Autowired
     private TokenService tokenService;
 
+    private static Logger logger = LoggerFactory.getLogger(EmailSenderApplication.class);
+
     @ApiResponses(value = {
             @ApiResponse(code = 204, message = "Email enviado com sucesso"),
             @ApiResponse(code = 400, message = "Erro nas informações recebidas do usuário"),
@@ -39,6 +44,7 @@ public class EmailController {
                 .name(receiver.getName())
                 .email(receiver.getEmail())
                 .build();
+        logger.info("Preparing to send the email to {}", receiver.getEmail());
         emailService.sendMail(convertedReceiver);
         return ResponseEntity.noContent().build();
     }
