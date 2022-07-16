@@ -29,7 +29,8 @@ public class Token {
     private String token;
 
     @NotNull(message = "O campo email é obrigatório")
-    @Email(message = "Email inválido")
+    @Pattern(regexp = "^[a-zA-Z0-9]+[._a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]*[a-zA-Z]*@[a-zA-Z0-9]{2,8}.[a-zA-Z.]{2,6}$",
+            message = "Email inválido")
     private String email;
 
     private Instant date;
