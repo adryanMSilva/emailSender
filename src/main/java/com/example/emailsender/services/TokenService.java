@@ -15,6 +15,7 @@ import javax.validation.*;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class TokenService {
     public String insertToken(final String userEmail){
         final var existentToken = repository.findByEmail(userEmail);
         if(Objects.nonNull(existentToken)){
-            if(Instant.now().getEpochSecond() - existentToken.getDate().getEpochSecond() > 3600) {
+            if(isExpired(existentToken)) {
                 logger.info("An expired token was found, deleting it...");
                 repository.delete(existentToken);
             } else {
@@ -65,7 +66,7 @@ public class TokenService {
         final var tokenFnd = repository.findByEmailAndToken(tokenSrc.getEmail(), tokenSrc.getToken());
 
         if(Objects.nonNull(tokenFnd)){
-            if(Instant.now().getEpochSecond() - tokenFnd.getDate().getEpochSecond() < 3600) {
+            if(!isExpired(tokenFnd)) {
                 logger.info("Token found, deleting it...");
                 repository.delete(tokenFnd);
             } else {
@@ -77,6 +78,19 @@ public class TokenService {
             throw new TokenNotFoundException("Não foi encontrado o token " + tokenSrc.getToken()
                     + " associado com o email " + tokenSrc.getEmail());
         }
+    }
+
+
+    public void clearExpiredTokens(){
+        final var tokens = repository.findAll();
+
+        logger.info("Removing the expired tokens");
+
+        tokens.forEach(p -> {
+            if(isExpired(p)) {
+                repository.delete(p);
+            }
+        });
     }
 
 
@@ -99,5 +113,12 @@ public class TokenService {
     private void createValidator(){
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
+    }
+
+    private boolean isExpired(Token token){
+        if(Instant.now().getEpochSecond() - token.getDate().getEpochSecond() < 3600) {
+            return false;
+        }
+        return true;
     }
 }
