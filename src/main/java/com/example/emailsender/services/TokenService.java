@@ -100,7 +100,7 @@ public class TokenService {
         final var rd = new Random();
 
         do {
-            generatedToken = String.valueOf(rd.nextInt(999999));
+            generatedToken = String.format("%06d",rd.nextInt(999999));
 
             if(Objects.isNull(repository.findByToken(generatedToken))) {
                 valid = true;
