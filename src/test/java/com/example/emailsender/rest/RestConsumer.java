@@ -2,24 +2,16 @@ package com.example.emailsender.rest;
 
 import com.example.emailsender.EmailSenderApplication;
 import com.example.emailsender.util.AutomationException;
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
-import java.util.Objects;
-
-import static io.restassured.RestAssured.*;
 
 public class RestConsumer {
     private final String url = "https://api-email-spring.herokuapp.com/";
