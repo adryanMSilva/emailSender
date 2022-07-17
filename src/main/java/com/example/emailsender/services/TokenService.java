@@ -15,10 +15,10 @@ import javax.validation.*;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
@@ -82,15 +82,15 @@ public class TokenService {
 
 
     public void clearExpiredTokens(){
-        final var tokens = repository.findAll();
+        var tokens = repository.findAll();
 
         logger.info("Removing the expired tokens");
 
-        tokens.forEach(p -> {
-            if(isExpired(p)) {
-                repository.delete(p);
-            }
-        });
+        tokens = tokens.stream()
+                        .filter(this::isExpired)
+                                .collect(Collectors.toList());
+
+        repository.deleteAll(tokens);
     }
 
 
@@ -115,7 +115,7 @@ public class TokenService {
         validator = factory.getValidator();
     }
 
-    private boolean isExpired(Token token){
+    private boolean isExpired(final Token token){
         if(Instant.now().getEpochSecond() - token.getDate().getEpochSecond() < 3600) {
             return false;
         }
