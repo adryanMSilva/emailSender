@@ -13,7 +13,7 @@ public class TokenScheduler {
     @Autowired
     private TokenService tokenService;
 
-    @Scheduled(cron = "0 0 5 * * ?", zone = "America/Sao_Paulo")
+    @Scheduled(cron = "0 0 22 * * ?", zone = "America/Sao_Paulo")
     public void clearExpiredTokens(){
         tokenService.clearExpiredTokens();
     }
