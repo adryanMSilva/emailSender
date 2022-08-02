@@ -32,7 +32,7 @@ public class RestConsumer {
             logger.info("Sending request \n{}\n to the url {}", requestBody.toString(4), (url+endpoint));
             final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if(!response.body().isEmpty()) {
-                logger.info("Response: \n{}", new JSONObject(response.body()).toString(4));
+                logger.info("Response: \n{}", new JSONObject(response.body()).toString(4).replaceAll("\\\\",""));
             } else {
                 logger.info("No response body");
             }
